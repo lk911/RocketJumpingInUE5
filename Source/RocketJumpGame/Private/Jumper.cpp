@@ -3,18 +3,20 @@
 
 #include "Jumper.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "Camera/PlayerCameraManager.h"
 #include "GameFramework/SpringArmComponent.h"
 // Sets default values
 AJumper::AJumper()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 300.f;
+    //SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    //SpringArm->SetupAttachment(RootComponent);
+    //SpringArm->TargetArmLength = 300.f;
 
-    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    Camera->SetupAttachment(SpringArm);
+    //Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    //Camera->SetupAttachment(SpringArm);
 
 }
 
@@ -46,13 +48,12 @@ void AJumper::Tick(float DeltaTime)
 void AJumper::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-    Super::SetupPlayerInputComponent(PlayerInputComponent);
     if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
         // Bind input actions to functions
         EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AJumper::Move);
         EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Started, this, &AJumper::Jump);
-        EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Started, this, &AJumper::Shoot);
+        EnhancedInputComponent->BindAction(IA_Shoot, ETriggerEvent::Started, this, &AJumper::Shoot);
         //EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Started, this, &AJumper::Look);
 
     }
@@ -89,5 +90,25 @@ void AJumper::Move(const FInputActionValue& Value)
 //    AddControllerPitchInput(LookInput.Y);
 //}
 void AJumper::Shoot(const FInputActionValue& Value) {
-
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (!PlayerController)
+    {
+        return;
+    }
+    FVector CameraLocation,SpawnLocation;
+    FRotator CameraRotation,SpawnRotation;
+    PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+    if (ActorToSpawnClass)
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawnClass, CameraLocation, CameraRotation);
+        if (SpawnedActor)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Spawned actor %s at %s"), *SpawnedActor->GetName(), *CameraLocation.ToString());
+        }
+    }
+    else {
+        UE_LOG(LogTemp,Warning,TEXT("ActorToSpawnClass is not set"))
+    }
 }

@@ -21,13 +21,13 @@ class ROCKETJUMPGAME_API AJumper : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AJumper();
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	USpringArmComponent* SpringArm;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* Camera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	USkeletalMeshComponent* CharacterMesh;
 protected:
 	// Called when the game starts or when spawned
@@ -54,6 +54,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void Shoot(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	TSubclassOf<AActor> ActorToSpawnClass;
 
 	//UFUNCTION(BlueprintNativeEvent, Category = "Input")
 	//void Look(const FInputActionValue& Value);
