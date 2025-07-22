@@ -98,13 +98,13 @@ void AJumper::Shoot(const FInputActionValue& Value) {
     FVector CameraLocation,SpawnLocation;
     FRotator CameraRotation,SpawnRotation;
     PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
-    SpawnLocation = (CameraRotation.Vector())*50.0;
-    SpawnRotation = CameraRotation;
+    SpawnLocation = (CameraRotation.Vector())*100.0;
+    SpawnRotation = CameraRotation+FRotator(-90.0f,0.0f,0.0f);
     if (ActorToSpawnClass)
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawnClass, CameraLocation+SpawnLocation, SpawnRotation);
+        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawnClass, (CameraLocation + SpawnLocation), SpawnRotation);
         if (SpawnedActor)
         {
             UE_LOG(LogTemp, Warning, TEXT("Spawned actor %s at %s"), *SpawnedActor->GetName(), *CameraLocation.ToString());
