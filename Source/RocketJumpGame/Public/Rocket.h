@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Jumper.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Rocket.generated.h"
 
 UCLASS()
@@ -29,6 +33,8 @@ protected:
 	USphereComponent* CollisionSphere;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* RocketMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reference")
+	FRotator CameraRotation;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

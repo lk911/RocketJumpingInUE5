@@ -2,7 +2,6 @@
 
 
 #include "Rocket.h"
-
 // Sets default values
 ARocket::ARocket()
 {
@@ -17,6 +16,32 @@ ARocket::ARocket()
 	CollisionSphere->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	CollisionSphere->SetNotifyRigidBodyCollision(true);
 	CollisionSphere->OnComponentHit.AddDynamic(this, &ARocket::OnHit);
+	UWorld* World = GetWorld();
+	ACharacter* CharacterRef = UGameplayStatics::GetPlayerCharacter(World, 0);
+	if (CharacterRef)
+	{
+		AJumper* MyPlayerCharacter = Cast<AJumper>(CharacterRef);
+		if (MyPlayerCharacter)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cast to Jumper Success"));
+			if (MyPlayerCharacter->Camera)
+			{
+				CameraRotation = MyPlayerCharacter->Camera->GetComponentRotation();
+				UE_LOG(LogTemp, Warning, TEXT("Aiming Pitch: %f"),CameraRotation.Pitch);
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("Camera not Found"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cast to Jumper Fail"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player character not found or not valid yet."));
+	}
 
 }
 
@@ -41,7 +66,18 @@ void ARocket::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Location = this->GetActorLocation();
-	Rotation = (this->GetActorRotation())+FRotator(90.0f, 0.0f, 0.0f);;
+	Rotation = this->GetActorRotation();
+	//UE_LOG(LogTemp, Warning, TEXT("My Pitch value is: %f"), Rotation.Pitch);
+	if (CameraRotation.Pitch<0.0)
+	{
+		Rotation -= FRotator(90.0f, 0.0f, 0.0f);
+		//UE_LOG(LogTemp, Display, TEXT("HELLLO1"));
+	}
+	else
+	{
+		Rotation += FRotator(90.0f, 0.0f, 0.0f);
+		//UE_LOG(LogTemp, Display, TEXT("HELLLO2"));
+	}
 	FVector ForwardDirection = Rotation.Vector();
 	FVector DistanceMade = ForwardDirection * Velocity * DeltaTime;
 	SetActorLocation(Location + DistanceMade);

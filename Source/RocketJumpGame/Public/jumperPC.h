@@ -19,6 +19,5 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	FVector2D GetViewportSize() const;
 	
 };

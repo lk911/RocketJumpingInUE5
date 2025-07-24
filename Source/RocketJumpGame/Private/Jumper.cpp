@@ -11,12 +11,14 @@ AJumper::AJumper()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-    //SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    //SpringArm->SetupAttachment(RootComponent);
-    //SpringArm->TargetArmLength = 300.f;
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(RootComponent);
+    SpringArm->TargetArmLength = 0.0f;
+    SpringArm->bUsePawnControlRotation = true;
 
-    //Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    //Camera->SetupAttachment(SpringArm);
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm);
+    Camera->bUsePawnControlRotation = false;
 
 }
 
@@ -108,6 +110,7 @@ void AJumper::Shoot(const FInputActionValue& Value) {
         if (SpawnedActor)
         {
             UE_LOG(LogTemp, Warning, TEXT("Spawned actor %s at %s"), *SpawnedActor->GetName(), *CameraLocation.ToString());
+
         }
     }
     else {
