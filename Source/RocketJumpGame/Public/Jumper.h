@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
+#include "Rocket.h"
 #include "Jumper.generated.h"
 
 class USpringArmComponent;
@@ -56,12 +57,11 @@ protected:
 	void Shoot(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
-	TSubclassOf<AActor> ActorToSpawnClass;
+	TSubclassOf<ARocket> RocketClass;
 
 	//UFUNCTION(BlueprintNativeEvent, Category = "Input")
 	//void Look(const FInputActionValue& Value);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 };

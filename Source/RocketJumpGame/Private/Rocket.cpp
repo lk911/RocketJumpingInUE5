@@ -5,18 +5,35 @@
 // Sets default values
 ARocket::ARocket()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	//collision
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
 	RocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RocketMesh"));
-	RootComponent = RocketMesh;
-	CollisionSphere->SetupAttachment(RocketMesh);
+	RootComponent = CollisionSphere;
+	RocketMesh->SetupAttachment(CollisionSphere);
 	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	CollisionSphere->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	//CollisionSphere->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+	CollisionSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	CollisionSphere->SetNotifyRigidBodyCollision(true);
+	/*CollisionSphere->SetUseCCD(true);*/
 	CollisionSphere->OnComponentHit.AddDynamic(this, &ARocket::OnHit);
-	UWorld* World = GetWorld();
+	RocketMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RocketMesh->SetMobility(EComponentMobility::Movable);
+	//projectile movement
+	Rotation = this->GetActorRotation();
+	FVector ForwardDirection = Rotation.Vector();
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+	ProjectileMovement->UpdatedComponent = CollisionSphere;
+	ProjectileMovement->InitialSpeed = Velocity;
+	ProjectileMovement->MaxSpeed = Velocity;
+	ProjectileMovement->ProjectileGravityScale = 0.f;
+	/*ProjectileMovement->SetVelocityInLocalSpace(ForwardDirection * ProjectileMovement->InitialSpeed);*/
+	//getting character aim rotation
+	/*UWorld* World = GetWorld();
 	ACharacter* CharacterRef = UGameplayStatics::GetPlayerCharacter(World, 0);
 	if (CharacterRef)
 	{
@@ -41,7 +58,7 @@ ARocket::ARocket()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player character not found or not valid yet."));
-	}
+	}*/
 
 }
 
@@ -65,21 +82,21 @@ void ARocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitive
 void ARocket::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	Location = this->GetActorLocation();
-	Rotation = this->GetActorRotation();
-	//UE_LOG(LogTemp, Warning, TEXT("My Pitch value is: %f"), Rotation.Pitch);
-	if (CameraRotation.Pitch<0.0)
-	{
-		Rotation -= FRotator(90.0f, 0.0f, 0.0f);
-		//UE_LOG(LogTemp, Display, TEXT("HELLLO1"));
-	}
-	else
-	{
-		Rotation += FRotator(90.0f, 0.0f, 0.0f);
-		//UE_LOG(LogTemp, Display, TEXT("HELLLO2"));
-	}
-	FVector ForwardDirection = Rotation.Vector();
-	FVector DistanceMade = ForwardDirection * Velocity * DeltaTime;
-	SetActorLocation(Location + DistanceMade);
+	//Location = this->GetActorLocation();
+	//Rotation = this->GetActorRotation();
+	////UE_LOG(LogTemp, Warning, TEXT("My Pitch value is: %f"), Rotation.Pitch);
+	//if (CameraRotation.Pitch<0.0)
+	//{
+	//	Rotation -= FRotator(90.0f, 0.0f, 0.0f);
+	//	//UE_LOG(LogTemp, Display, TEXT("HELLLO1"));
+	//}
+	//else
+	//{
+	//	Rotation += FRotator(90.0f, 0.0f, 0.0f);
+	//	//UE_LOG(LogTemp, Display, TEXT("HELLLO2"));
+	//}
+	//FVector ForwardDirection = Rotation.Vector();
+	//FVector DistanceMade = ForwardDirection * Velocity * DeltaTime;
+	//SetActorLocation(Location + DistanceMade);
 }
 

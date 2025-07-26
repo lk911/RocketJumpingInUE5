@@ -6,8 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Jumper.h"
+//#include "Jumper.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Rocket.generated.h"
 
@@ -19,6 +20,8 @@ class ROCKETJUMPGAME_API ARocket : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ARocket();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	UProjectileMovementComponent* ProjectileMovement;
 
 protected:
 	// Called when the game starts or when spawned

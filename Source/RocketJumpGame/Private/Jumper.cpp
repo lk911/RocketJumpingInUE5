@@ -10,15 +10,15 @@
 AJumper::AJumper()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
     SpringArm->TargetArmLength = 0.0f;
-    SpringArm->bUsePawnControlRotation = true;
+    SpringArm->bUsePawnControlRotation = false;
 
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     Camera->SetupAttachment(SpringArm);
-    Camera->bUsePawnControlRotation = false;
+    Camera->bUsePawnControlRotation = true;
 
 }
 
@@ -102,18 +102,19 @@ void AJumper::Shoot(const FInputActionValue& Value) {
     PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
     SpawnLocation = (CameraRotation.Vector())*100.0;
     SpawnRotation = CameraRotation+FRotator(-90.0f,0.0f,0.0f);
-    if (ActorToSpawnClass)
+    if (RocketClass)
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawnClass, (CameraLocation + SpawnLocation), SpawnRotation);
-        if (SpawnedActor)
+        ARocket* NewRocket = GetWorld()->SpawnActor<ARocket>(RocketClass, (CameraLocation + SpawnLocation), SpawnRotation,SpawnParams);
+        if (NewRocket && NewRocket->ProjectileMovement)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Spawned actor %s at %s"), *SpawnedActor->GetName(), *CameraLocation.ToString());
+            UE_LOG(LogTemp, Warning, TEXT("Spawned actor %s at %s"), *NewRocket->GetName(), *CameraLocation.ToString());
+            NewRocket->ProjectileMovement->Velocity = NewRocket->ProjectileMovement->InitialSpeed * CameraRotation.Vector();
 
         }
     }
     else {
-        UE_LOG(LogTemp,Warning,TEXT("ActorToSpawnClass is not set"))
+        UE_LOG(LogTemp,Warning,TEXT("RocketClass is not set"))
     }
 }
