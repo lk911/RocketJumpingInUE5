@@ -9,6 +9,7 @@
 //#include "Jumper.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "Rocket.generated.h"
 
@@ -38,9 +39,17 @@ protected:
 	UStaticMeshComponent* RocketMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reference")
 	FRotator CameraRotation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
+	float ExplosionRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
+	float ExplosionStrength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
+	ERadialImpulseFalloff ExplosionFalloff;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void PushACharacter(ACharacter* TargetCharacter, FVector PushDirection, float PushStrength);
 
 public:	
 	// Called every frame

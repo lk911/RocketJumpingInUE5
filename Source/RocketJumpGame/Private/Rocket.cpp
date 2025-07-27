@@ -31,35 +31,9 @@ ARocket::ARocket()
 	ProjectileMovement->InitialSpeed = Velocity;
 	ProjectileMovement->MaxSpeed = Velocity;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
-	/*ProjectileMovement->SetVelocityInLocalSpace(ForwardDirection * ProjectileMovement->InitialSpeed);*/
-	//getting character aim rotation
-	/*UWorld* World = GetWorld();
-	ACharacter* CharacterRef = UGameplayStatics::GetPlayerCharacter(World, 0);
-	if (CharacterRef)
-	{
-		AJumper* MyPlayerCharacter = Cast<AJumper>(CharacterRef);
-		if (MyPlayerCharacter)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Cast to Jumper Success"));
-			if (MyPlayerCharacter->Camera)
-			{
-				CameraRotation = MyPlayerCharacter->Camera->GetComponentRotation();
-				UE_LOG(LogTemp, Warning, TEXT("Aiming Pitch: %f"),CameraRotation.Pitch);
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Camera not Found"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Cast to Jumper Fail"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Player character not found or not valid yet."));
-	}*/
-
+	ExplosionRadius = 500.0f;    
+	ExplosionStrength = 50000.0f; 
+	ExplosionFalloff = ERadialImpulseFalloff::RIF_Linear;
 }
 
 // Called when the game starts or when spawned
@@ -74,29 +48,41 @@ void ARocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitive
 	{
 		return;
 	}
+	FVector ExplosionLocation = GetActorLocation();
+	float QueryRadius = ExplosionRadius;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery1); // PhysicsBody
+	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery2); // Destructible
+	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery3); // Pawn
+	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery4);
+	if (ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor))
+	{
+		PushACharacter(OtherCharacter,FVector(0.0,0.0,1.0),1000.0);
+	}
 	UE_LOG(LogTemp, Warning, TEXT("ARocket hit: %s"), *OtherActor->GetName());
 	Destroy();
+}
+void ARocket::PushACharacter(ACharacter* TargetCharacter, FVector PushDirection, float PushStrength)
+{
+	if (TargetCharacter)
+	{
+		// Calculate the launch velocity
+		FVector LaunchVelocity = PushDirection.GetSafeNormal() * PushStrength;
+
+		// Launch the character
+		// bXYOverride: If true, replaces current XY velocity. If false, adds to it.
+		// bZOverride: If true, replaces current Z velocity. If false, adds to it.
+		TargetCharacter->LaunchCharacter(LaunchVelocity, false, true); // Often, you want to add to XY but replace Z for jumps/knocks
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid character reference"));
+	}
 }
 
 // Called every frame
 void ARocket::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//Location = this->GetActorLocation();
-	//Rotation = this->GetActorRotation();
-	////UE_LOG(LogTemp, Warning, TEXT("My Pitch value is: %f"), Rotation.Pitch);
-	//if (CameraRotation.Pitch<0.0)
-	//{
-	//	Rotation -= FRotator(90.0f, 0.0f, 0.0f);
-	//	//UE_LOG(LogTemp, Display, TEXT("HELLLO1"));
-	//}
-	//else
-	//{
-	//	Rotation += FRotator(90.0f, 0.0f, 0.0f);
-	//	//UE_LOG(LogTemp, Display, TEXT("HELLLO2"));
-	//}
-	//FVector ForwardDirection = Rotation.Vector();
-	//FVector DistanceMade = ForwardDirection * Velocity * DeltaTime;
-	//SetActorLocation(Location + DistanceMade);
 }
 
