@@ -106,6 +106,8 @@ void AJumper::Shoot(const FInputActionValue& Value) {
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = this;
         ARocket* NewRocket = GetWorld()->SpawnActor<ARocket>(RocketClass, (CameraLocation + SpawnLocation), SpawnRotation,SpawnParams);
         if (NewRocket && NewRocket->ProjectileMovement)
         {

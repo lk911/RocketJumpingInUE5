@@ -2,6 +2,8 @@
 
 
 #include "Rocket.h"
+#include "Engine/World.h"
+#include "Engine/OverlapResult.h"
 // Sets default values
 ARocket::ARocket()
 {
@@ -31,35 +33,63 @@ ARocket::ARocket()
 	ProjectileMovement->InitialSpeed = Velocity;
 	ProjectileMovement->MaxSpeed = Velocity;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
-	ExplosionRadius = 500.0f;    
-	ExplosionStrength = 50000.0f; 
-	ExplosionFalloff = ERadialImpulseFalloff::RIF_Linear;
+	ExplosionRadius = 500.0f;
+	KnockbackStrength = 1000.0f;
+	EdgeKnockbackScale = 0.5f;
 }
 
 // Called when the game starts or when spawned
 void ARocket::BeginPlay()
 {
 	Super::BeginPlay();
+	// don't let the rocket hit whoever fired it on the way out
+	if (AActor* Shooter = GetOwner())
+	{
+		CollisionSphere->IgnoreActorWhenMoving(Shooter, true);
+	}
 }
 
 void ARocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (!OtherActor || (OtherActor == this) || !OtherComp)
+	if (!OtherActor || (OtherActor == this) || (OtherActor == GetOwner()) || !OtherComp)
 	{
 		return;
 	}
-	FVector ExplosionLocation = GetActorLocation();
-	float QueryRadius = ExplosionRadius;
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery1); // PhysicsBody
-	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery2); // Destructible
-	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery3); // Pawn
-	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery4);
-	if (ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor))
-	{
-		PushACharacter(OtherCharacter,FVector(0.0,0.0,1.0),1000.0);
-	}
 	UE_LOG(LogTemp, Warning, TEXT("ARocket hit: %s"), *OtherActor->GetName());
+	Explode();
+}
+
+void ARocket::Explode()
+{
+	const FVector ExplosionLocation = GetActorLocation();
+
+	TArray<FOverlapResult> Overlaps;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	GetWorld()->OverlapMultiByObjectType(Overlaps, ExplosionLocation, FQuat::Identity,
+		FCollisionObjectQueryParams(ECC_Pawn), FCollisionShape::MakeSphere(ExplosionRadius), QueryParams);
+
+	// a character can show up more than once if several of its components overlap
+	TSet<ACharacter*> HitCharacters;
+	for (const FOverlapResult& Overlap : Overlaps)
+	{
+		if (ACharacter* HitCharacter = Cast<ACharacter>(Overlap.GetActor()))
+		{
+			HitCharacters.Add(HitCharacter);
+		}
+	}
+
+	for (ACharacter* HitCharacter : HitCharacters)
+	{
+		const FVector ToCharacter = HitCharacter->GetActorLocation() - ExplosionLocation;
+		// full strength at the center, fading linearly to EdgeKnockbackScale at the edge
+		const float DistanceAlpha = FMath::Clamp(ToCharacter.Size() / ExplosionRadius, 0.0f, 1.0f);
+		const float Strength = KnockbackStrength * FMath::Lerp(1.0f, EdgeKnockbackScale, DistanceAlpha);
+		// if the explosion is right on top of the character, push straight up
+		const FVector PushDirection = ToCharacter.IsNearlyZero() ? FVector::UpVector : ToCharacter;
+		PushACharacter(HitCharacter, PushDirection, Strength);
+	}
+
 	Destroy();
 }
 void ARocket::PushACharacter(ACharacter* TargetCharacter, FVector PushDirection, float PushStrength)
@@ -72,7 +102,7 @@ void ARocket::PushACharacter(ACharacter* TargetCharacter, FVector PushDirection,
 		// Launch the character
 		// bXYOverride: If true, replaces current XY velocity. If false, adds to it.
 		// bZOverride: If true, replaces current Z velocity. If false, adds to it.
-		TargetCharacter->LaunchCharacter(LaunchVelocity, false, true); // Often, you want to add to XY but replace Z for jumps/knocks
+		TargetCharacter->LaunchCharacter(LaunchVelocity, false, false); // add to both so a jump and a rocket stack like in TF2
 	}
 	else
 	{

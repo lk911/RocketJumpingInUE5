@@ -41,13 +41,17 @@ protected:
 	FRotator CameraRotation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
 	float ExplosionRadius;
+	// launch speed given to a character at the center of the explosion
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
-	float ExplosionStrength;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
-	ERadialImpulseFalloff ExplosionFalloff;
+	float KnockbackStrength;
+	// fraction of KnockbackStrength left at the edge of the radius (TF2 is about 0.5)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float EdgeKnockbackScale;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void Explode();
 	UFUNCTION()
 	void PushACharacter(ACharacter* TargetCharacter, FVector PushDirection, float PushStrength);
 
