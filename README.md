@@ -7,11 +7,10 @@ Trying to recreate the rocket jump from Team Fortress 2 in Unreal Engine 5, writ
 - First-person character with movement and jumping (Enhanced Input)
 - Clicking fires a rocket from the camera in the direction you're aiming
 - Rockets use UProjectileMovementComponent and get destroyed when they hit something
-- A rocket hitting the player launches them upward
+- Rockets explode on impact and push nearby characters away from the blast, strongest at the center and fading toward the edge like TF2
 
 ## To do
 
-- Proper radial knockback based on how close the explosion is, like in TF2
 - Explosion effects and sound
 
 ## Running it
